@@ -6,16 +6,11 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-# Configure AWS credentials and S3 bucket
-AWS_ACCESS_KEY = 'AKIATSBG2T23D7IOZZOC'
-AWS_SECRET_KEY = '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'
 S3_BUCKET_NAME = 'universal-image-bucket'
 
 def get_s3_images():
     try:
-        s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY,
-                          aws_secret_access_key=AWS_SECRET_KEY,
-                          config=Config(signature_version='s3v4'))
+        s3 = boto3.client('s3',config=Config(signature_version='s3v4'))
         objects = s3.list_objects_v2(Bucket=S3_BUCKET_NAME)
         images = [obj['Key'] for obj in objects.get('Contents', [])]
         return images
@@ -23,8 +18,7 @@ def get_s3_images():
         return []
 
 def generate_signed_url(object_key):
-    s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY,
-                      aws_secret_access_key=AWS_SECRET_KEY)
+    s3 = boto3.client('s3')
     url = s3.generate_presigned_url('get_object',
                                       Params={'Bucket': S3_BUCKET_NAME, 'Key': object_key},
                                       ExpiresIn=3600)  # URL expires in 1 hour
